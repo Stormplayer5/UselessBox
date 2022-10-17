@@ -1,7 +1,7 @@
 /* Code for useless box
  *  First iteration on 10/17/2022
  */
-int sw0 = 0; //Starting position of arm
+int sw0 = 0; //Starting position of arm, resets the arm back to start position
 int sw1 = ; //Switch 1
 int sw2 = ; //Switch 2
 int sw3 = ; //Switch 3
