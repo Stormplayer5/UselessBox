@@ -31,3 +31,6 @@ void loop() {
 * }
 */
 }
+/* Have some sort of function here as well to have the program read the switches and be able to count how many times in a row they are pressed,
+* or count how many times they are pressed in general
+*/
