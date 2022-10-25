@@ -238,6 +238,10 @@ void distancemeaure(){
 lcd.print("Welcome to the game...");
     }}
 
+void tones(){
+    //Use this loop to play tones based on the pin
+}
+
 void setup() {
   // put your setup code here, to run once:
   // setup switches as digital inputs
