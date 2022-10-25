@@ -83,6 +83,7 @@ int Trig  ; //Need to add trig pin
 int Echo  ; //Need to add Echo Pin
 float duration;
 float distance;
+int Speaker; //Need to add speaker pin
 
 LiquidCrystal lcd(7, 8, 9, 10, 11, 12); //Need to make sure these pins are correct
 
