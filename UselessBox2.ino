@@ -238,8 +238,25 @@ void distancemeaure(){
 lcd.print("Welcome to the game...");
     }}
 
-void tones(){
+void sounds(){
     //Use this loop to play tones based on the pin
+    if (pinstate==1){
+        tone(speaker,speaker1,1000);
+        notone();
+    }
+    else if (pinstate==2){
+        tone(speaker,speaker2,1000);
+        notone();
+    }
+    else if (pinstate==3){
+        tone(speaker,speaker3.1000);
+        notone();
+    }
+    else if (pinstate==4){
+        tone(speaker,speaker4,1000);
+        notone();
+    }
+    //Each switch plays a different tone, specified by the different speaker#s
 }
 
 void setup() {
