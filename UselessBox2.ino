@@ -240,23 +240,26 @@ lcd.print("Welcome to the game...");
 
 void sounds(){
     //Use this loop to play tones based on the pin
-    if (pinstate==1){
+   for (int i=0;i<NUM_SWITCHES;++i){
+    int pinstate=digitalRead(switchPins[i])
+    if (pinstate==1 && i=1){
         tone(speaker,speaker1,1000);
-        notone();
+        noTone();
     }
-    else if (pinstate==2){
+    else if (pinstate==1 && i=2){
         tone(speaker,speaker2,1000);
-        notone();
+        noTone();
     }
-    else if (pinstate==3){
+    else if (pinstate==1 && i=3){
         tone(speaker,speaker3.1000);
-        notone();
+        noTone();
     }
-    else if (pinstate==4){
+    else if (pinstate==1 && i=4){
         tone(speaker,speaker4,1000);
-        notone();
+        noTone();
     }
     //Each switch plays a different tone, specified by the different speaker#s
+}
 }
 
 void setup() {
