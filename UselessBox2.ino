@@ -1,6 +1,7 @@
 /* Code for mech 307 project
 * Adapted from https://blog.hirnschall.net/diy-useless-box/
 * Added LCD screen, wake up with an ultrasonic sensor, speaker
+* Must have StepperDriver.h library installed. Search A4988 in Arduino Libraries
 */
 
 #include <A4988.h>
@@ -11,7 +12,6 @@
 #include <MultiDriver.h>
 #include <SyncDriver.h>
 #include <LiquidCrystal.h>
-
 #include <Servo.h>
 
 //misc
@@ -84,6 +84,7 @@ int Echo  ; //Need to add Echo Pin
 float duration;
 float distance;
 int Speaker; //Need to add speaker pin
+int sleep; 
 
 LiquidCrystal lcd(7, 8, 9, 10, 11, 12); //Need to make sure these pins are correct
 
@@ -236,6 +237,8 @@ void distancemeaure(){
   
   if(distance < 16){ //Set to 16 centimeters.  Roughly 1/2 ft
 lcd.print("Welcome to the game...");
+sleep=0;
+activateMotors()
     }}
 
 void sounds(){
@@ -328,7 +331,9 @@ void loop(){
   //Serial.println("idle Loop: " + String(idleLoopCounter) +" of " + String(TIME_TO_SHUTDOWN_IN_MS/DELAY_BETWEEN_LOOP_RUNS_IN_MS));
   // put your main code here, to run repeatedly:
   delay(DELAY_BETWEEN_LOOP_RUNS_IN_MS);
-
+while (sleep=1){
+  distancemeaure()
+}
   //check if switches are pressed. if so, goto correct position and extend arm
   addSwitchesToQueue();
   if(queuec){
@@ -336,6 +341,7 @@ void loop(){
     if(isShutdown){  //if motors are turned off, turn them back on
       activateMotors();
     goTo(switchesPos[queue[0]]);
+    sounds()  //Play a tone based on which switch is pressed.  Is this the best spot for this?
     }
     if(isClosed){
       openDoor();
@@ -355,5 +361,7 @@ void loop(){
 
   if(!isShutdown && idleLoopCounter >= TIME_TO_SHUTDOWN_IN_MS/DELAY_BETWEEN_LOOP_RUNS_IN_MS){
     deactivateMotors(); //turn motors off after idle for more than TIME_TO_SHUTDOWN_IN_MS ms
+    lcd.Print("Goodbye");
+    sleep=1;
   }
 }// end of void loop
