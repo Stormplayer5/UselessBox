@@ -239,6 +239,7 @@ void distancemeaure(){
 lcd.print("Welcome to the game...");
 sleep=0;
 activateMotors()
+lcd.clear();
     }}
 
 void sounds(){
@@ -301,7 +302,7 @@ void setup() {
   delay(4000);
   lcd.print("Ready");
   delay(2500);
-  lcd.print(" "); //Does this work??  Trying to reset the display to not display anything
+  lcd.clear(); //Does this work??  Trying to reset the display to not display anything
 
 
   //if all switches are active on bootup, activate disassembling mode.
@@ -362,6 +363,7 @@ while (sleep=1){
   if(!isShutdown && idleLoopCounter >= TIME_TO_SHUTDOWN_IN_MS/DELAY_BETWEEN_LOOP_RUNS_IN_MS){
     deactivateMotors(); //turn motors off after idle for more than TIME_TO_SHUTDOWN_IN_MS ms
     lcd.Print("Goodbye");
+    lcd.clear();
     sleep=1;
   }
 }// end of void loop
