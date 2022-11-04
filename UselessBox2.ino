@@ -83,8 +83,13 @@ int Trig  ; //Need to add trig pin
 int Echo  ; //Need to add Echo Pin
 float duration;
 float distance;
-int Speaker; //Need to add speaker pin
+int speaker; //Need to add speaker pin
 int sleep; 
+int pinstate;
+int speaker1 = 200;
+int speaker2 = 300;
+int speaker3 = 400;
+int speaker4 = 500;
 
 LiquidCrystal lcd(7, 8, 9, 10, 11, 12); //Need to make sure these pins are correct
 
@@ -238,29 +243,29 @@ void distancemeaure(){
   if(distance < 16){ //Set to 16 centimeters.  Roughly 1/2 ft
 lcd.print("Welcome to the game...");
 sleep=0;
-activateMotors()
+activateMotors();
 lcd.clear();
     }}
 
 void sounds(){
     //Use this loop to play tones based on the pin
    for (int i=0;i<NUM_SWITCHES;++i){
-    int pinstate=digitalRead(switchPins[i])
+   int pinstate=digitalRead(switchPins[i]);
     if (pinstate==1 && i=1){
         tone(speaker,speaker1,1000);
-        noTone();
+        noTone(speaker);
     }
     else if (pinstate==1 && i=2){
         tone(speaker,speaker2,1000);
-        noTone();
+        noTone(speaker);
     }
     else if (pinstate==1 && i=3){
-        tone(speaker,speaker3.1000);
-        noTone();
+        tone(speaker,speaker3,1000);
+        noTone(speaker);
     }
     else if (pinstate==1 && i=4){
-        tone(speaker,speaker4,1000);
-        noTone();
+        tone(speaker,speaker2,1000);
+        noTone(speaker);
     }
     //Each switch plays a different tone, specified by the different speaker#s
 }
@@ -333,7 +338,7 @@ void loop(){
   // put your main code here, to run repeatedly:
   delay(DELAY_BETWEEN_LOOP_RUNS_IN_MS);
 while (sleep=1){
-  distancemeaure()
+  distancemeaure();
 }
   //check if switches are pressed. if so, goto correct position and extend arm
   addSwitchesToQueue();
@@ -342,7 +347,7 @@ while (sleep=1){
     if(isShutdown){  //if motors are turned off, turn them back on
       activateMotors();
     goTo(switchesPos[queue[0]]);
-    sounds()  //Play a tone based on which switch is pressed.  Is this the best spot for this?
+    sounds();  //Play a tone based on which switch is pressed.  Is this the best spot for this?
     }
     if(isClosed){
       openDoor();
@@ -362,7 +367,7 @@ while (sleep=1){
 
   if(!isShutdown && idleLoopCounter >= TIME_TO_SHUTDOWN_IN_MS/DELAY_BETWEEN_LOOP_RUNS_IN_MS){
     deactivateMotors(); //turn motors off after idle for more than TIME_TO_SHUTDOWN_IN_MS ms
-    lcd.Print("Goodbye");
+    lcd.print("Goodbye");
     lcd.clear();
     sleep=1;
   }
