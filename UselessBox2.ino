@@ -251,19 +251,19 @@ void sounds(){
     //Use this loop to play tones based on the pin
    for (int i=0;i<NUM_SWITCHES;++i){
    int pinstate=digitalRead(switchPins[i]);
-    if (pinstate==1 && i=1){
+    if (pinstate==HIGH && i==1){
         tone(speaker,speaker1,1000);
         noTone(speaker);
     }
-    else if (pinstate==1 && i=2){
+    else if (pinstate==HIGH && i==2){
         tone(speaker,speaker2,1000);
         noTone(speaker);
     }
-    else if (pinstate==1 && i=3){
+    else if (pinstate==HIGH && i==3){
         tone(speaker,speaker3,1000);
         noTone(speaker);
     }
-    else if (pinstate==1 && i=4){
+    else if (pinstate==HIGH && i==4){
         tone(speaker,speaker2,1000);
         noTone(speaker);
     }
