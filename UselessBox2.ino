@@ -90,6 +90,11 @@ int speaker1 = 200;
 int speaker2 = 300;
 int speaker3 = 400;
 int speaker4 = 500;
+int pinnum;
+int newstate;
+int oldstate;
+int presscount=0;
+
 
 LiquidCrystal lcd(7, 8, 9, 10, 11, 12); //Need to make sure these pins are correct
 
@@ -270,6 +275,51 @@ void sounds(){
     //Each switch plays a different tone, specified by the different speaker#s
 }
 }
+/* void repeat(){
+  for (int i=0;i<NUM_SWITCHES;++i){
+   int pinstate=digitalRead(switchPins[i]);
+    if (pinstate==HIGH && i==1){
+       pinnum=1;
+    }
+    else if (pinstate==HIGH && i==2){
+        pinnum=2;
+    }
+    else if (pinstate==HIGH && i==3){
+       pinnum=3;
+    }
+    else if (pinstate==HIGH && i==4){
+        pinnum=4;
+    }
+    //Names the different pins with different variables
+}
+if (newstate==oldstate){
+  presscount=presscount+1;
+  oldstate=pinnum;
+}
+else{
+  count=0;
+}
+if (count=3){
+  lcd.print("Press another switch");
+  delay(2000);
+  lcd.clear();
+}
+else if (count=4){
+  lcd.print("I said choose differently")
+  delay(2000);
+  lcd.clear();
+}
+else if (count>=5){
+  lcd.print("Im Leaving");
+  delay(2000);
+  lcd.clear();
+  deactivateMotors();
+  lcd.print("Bye >:(");
+  delay(2000);
+  lcd.clear();
+}
+}
+*/
 
 void setup() {
   // put your setup code here, to run once:
