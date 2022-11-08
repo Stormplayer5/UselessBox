@@ -1,7 +1,7 @@
 /* Code for mech 307 project
-* Adapted from https://blog.hirnschall.net/diy-useless-box/
-* Added LCD screen, wake up with an ultrasonic sensor, speaker
-* Must have StepperDriver.h library installed. Search A4988 in Arduino Libraries
+  Adapted from https://blog.hirnschall.net/diy-useless-box/
+  Added LCD screen, wake up with an ultrasonic sensor, speaker
+  Must have StepperDriver.h library installed. Search A4988 in Arduino Libraries
 */
 
 #include <A4988.h>
@@ -43,20 +43,20 @@
 #define MAX_POS 0
 
 //switches
-#define SW1_PIN 2
-#define SW2_PIN 4
-#define SW3_PIN 12
-#define SW4_PIN 13
-#define SW5_PIN A0
-#define SW6_PIN A1
-#define NUM_SWITCHES 6
-//#define QUEUE_SIZE 7  //NUM_SWITCHES+1
+#define SW1_PIN A0
+#define SW2_PIN A2
+#define SW3_PIN A3
+#define SW4_PIN A4
+#define SW5_PIN A5
+//#define SW6_PIN A1
+#define NUM_SWITCHES 4
+//#define QUEUE_SIZE 5  //NUM_SWITCHES+1
 
 //servos
 //PWM pins
-#define SERVO1_PIN 5
-#define SERVO2_PIN 3
-#define NUM_SERVOS 2
+// #define SERVO1_PIN 5
+#define SERVO2_PIN 13
+#define NUM_SERVOS 1
 #define SERVO_DELAY 250
 
 //endstop
@@ -66,12 +66,12 @@
 A4988 stepper(STEPS_PER_REV, DIR_PIN, STEP_PIN, MS1_PIN, MS2_PIN, MS3_PIN);
 
 Servo* servos[NUM_SERVOS];
-short servoPins[] = {SERVO1_PIN,SERVO2_PIN};
+short servoPins[] = {SERVO1_PIN, SERVO2_PIN};
 
-short switchPins[] = {SW1_PIN,SW2_PIN,SW3_PIN,SW4_PIN,SW5_PIN,SW6_PIN};
+short switchPins[] = {SW1_PIN, SW2_PIN, SW3_PIN, SW4_PIN, SW5_PIN, SW6_PIN};
 
-short switchesState[]={0,0,0,0,0,0};
-unsigned int switchesPos[] = {-1200,-960,-720,-480,-240,0};
+short switchesState[] = {0, 0, 0, 0, 0, 0};
+unsigned int switchesPos[] = { -1200, -960, -720, -480, -240, 0};
 
 short isHomed = 0;
 int currentPos = 0;
@@ -79,22 +79,18 @@ short isClosed = 1;
 short isStandby = 0;
 short isExtended = 0;
 short isShutdown = 0;
-int Trig  ; //Need to add trig pin
-int Echo  ; //Need to add Echo Pin
+int Trig =4; //Need to add trig pin
+int Echo =5; //Need to add Echo Pin
 float duration;
 float distance;
-int speaker; //Need to add speaker pin
-int sleep; 
+int speaker=6; //Need to add speaker pin
+int sleep;
 int pinstate;
 int speaker1 = 200;
 int speaker2 = 300;
 int speaker3 = 400;
 int speaker4 = 500;
-int pinnum;
-int newstate;
-int oldstate;
-int presscount=0;
-
+int speaker5 = 600;
 
 LiquidCrystal lcd(7, 8, 9, 10, 11, 12); //Need to make sure these pins are correct
 
@@ -272,6 +268,10 @@ void sounds(){
         tone(speaker,speaker2,1000);
         noTone(speaker);
     }
+        else if (pinstate == HIGH && i==5){
+      tone(speaker, speaker5,1000);
+      noTone(speaker);
+    }
     //Each switch plays a different tone, specified by the different speaker#s
 }
 }
@@ -289,6 +289,9 @@ void sounds(){
     }
     else if (pinstate==HIGH && i==4){
         pinnum=4;
+    }
+    else if (pinstate==HIGH&&i==5){
+      pinnum=5;
     }
     //Names the different pins with different variables
 }
