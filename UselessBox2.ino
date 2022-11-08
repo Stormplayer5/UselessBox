@@ -49,8 +49,8 @@
 #define SW4_PIN A4
 #define SW5_PIN A5
 //#define SW6_PIN A1
-#define NUM_SWITCHES 4
-//#define QUEUE_SIZE 5  //NUM_SWITCHES+1
+#define NUM_SWITCHES 5
+//#define QUEUE_SIZE 6  //NUM_SWITCHES+1
 
 //servos
 //PWM pins
@@ -66,9 +66,9 @@
 A4988 stepper(STEPS_PER_REV, DIR_PIN, STEP_PIN, MS1_PIN, MS2_PIN, MS3_PIN);
 
 Servo* servos[NUM_SERVOS];
-short servoPins[] = {SERVO1_PIN, SERVO2_PIN};
+short servoPins[] = {SERVO2_PIN};
 
-short switchPins[] = {SW1_PIN, SW2_PIN, SW3_PIN, SW4_PIN, SW5_PIN, SW6_PIN};
+short switchPins[] = {SW1_PIN, SW2_PIN, SW3_PIN, SW4_PIN, SW5_PIN};
 
 short switchesState[] = {0, 0, 0, 0, 0, 0};
 unsigned int switchesPos[] = { -1200, -960, -720, -480, -240, 0};
@@ -95,7 +95,7 @@ int speaker5 = 600;
 LiquidCrystal lcd(7, 8, 9, 10, 11, 12); //Need to make sure these pins are correct
 
 
-short queue[NUM_SWITCHES] = {-1,-1,-1,-1,-1,-1};
+short queue[NUM_SWITCHES] = {-1,-1,-1,-1,-1};
 short queuec = 0;
 
 unsigned int idleLoopCounter = 0;
