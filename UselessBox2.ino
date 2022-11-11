@@ -2,6 +2,7 @@
   Adapted from https://blog.hirnschall.net/diy-useless-box/
   Added LCD screen, wake up with an ultrasonic sensor, speaker
   Must have StepperDriver.h library installed. Search A4988 in Arduino Libraries
+  Code is used on an Arduino Uno board
 */
 
 #include <A4988.h>
@@ -44,10 +45,10 @@
 
 //switches
 #define SW1_PIN A0
-#define SW2_PIN A2
-#define SW3_PIN A3
-#define SW4_PIN A4
-#define SW5_PIN A5
+#define SW2_PIN A1
+#define SW3_PIN A2
+#define SW4_PIN A3
+#define SW5_PIN A4
 //#define SW6_PIN A1
 #define NUM_SWITCHES 5
 //#define QUEUE_SIZE 6  //NUM_SWITCHES+1
@@ -60,7 +61,7 @@
 #define SERVO_DELAY 250
 
 //endstop
-#define ENDSTOP_PIN A2
+#define ENDSTOP_PIN A5
 
 
 A4988 stepper(STEPS_PER_REV, DIR_PIN, STEP_PIN, MS1_PIN, MS2_PIN, MS3_PIN);
@@ -79,11 +80,11 @@ short isClosed = 1;
 short isStandby = 0;
 short isExtended = 0;
 short isShutdown = 0;
-int Trig =4; //Need to add trig pin
-int Echo =5; //Need to add Echo Pin
+int Trig = 4; //Need to add trig pin
+int Echo = 5; //Need to add Echo Pin
 float duration;
 float distance;
-int speaker=6; //Need to add speaker pin
+int speaker = 6; //Need to add speaker pin
 int sleep;
 int pinstate;
 int speaker1 = 200;
@@ -91,25 +92,25 @@ int speaker2 = 300;
 int speaker3 = 400;
 int speaker4 = 500;
 int speaker5 = 600;
-
+int pinnum;
 LiquidCrystal lcd(7, 8, 9, 10, 11, 12); //Need to make sure these pins are correct
 
 
-short queue[NUM_SWITCHES] = {-1,-1,-1,-1,-1};
+short queue[NUM_SWITCHES] = { -1, -1, -1, -1, -1};
 short queuec = 0;
 
 unsigned int idleLoopCounter = 0;
 
-short disassemblingMode=1;
+short disassemblingMode = 1;
 
 
-int goToHome(){
+int goToHome() {
   //Serial.println("homing");
   isHomed = 0;
-  while(!isHomed){
-    if(!digitalRead(ENDSTOP_PIN)){
+  while (!isHomed) {
+    if (!digitalRead(ENDSTOP_PIN)) {
       isHomed = 1;
-      currentPos=0;
+      currentPos = 0;
       return 1;
     }
     stepper.rotate(0.9);
@@ -119,54 +120,54 @@ int goToHome(){
 }
 
 //goto position (pos) given in absolute coordinates
-int goTo(int pos){
+int goTo(int pos) {
   //Serial.println("goTo");
-  if(pos< MIN_POS || pos > MAX_POS)
+  if (pos < MIN_POS || pos > MAX_POS)
     return 0;
-  if(!isHomed)
+  if (!isHomed)
     goToHome();
 
-  int dir = (pos-currentPos)>0?1:-1;
+  int dir = (pos - currentPos) > 0 ? 1 : -1;
   //check if switch is flipped while moving...
-  while(currentPos != pos){
+  while (currentPos != pos) {
     addSwitchesToQueue();
     stepper.rotate(dir);
-    currentPos+=dir;
+    currentPos += dir;
   }
   return 1;
 }
 //check if item is in queue
-int isInQueue(short item){
-  for(int i=0; i< queuec;++i){
-    if(queue[i] == item)
+int isInQueue(short item) {
+  for (int i = 0; i < queuec; ++i) {
+    if (queue[i] == item)
       return 1;
   }
   return 0;
 }
 //add item to end of queue
-int qpush(short item){
-  queue[queuec++]=item;
+int qpush(short item) {
+  queue[queuec++] = item;
 }
 //remove item from front of queue
-int qpop(){
-  queuec-=1;
-  for(int i=0;i<queuec;++i){
-    queue[i] = queue[i+1];
+int qpop() {
+  queuec -= 1;
+  for (int i = 0; i < queuec; ++i) {
+    queue[i] = queue[i + 1];
   }
 }
 
-int addSwitchesToQueue(){
+int addSwitchesToQueue() {
   //Serial.println("addToQueue");
-  for(int i=0;i<NUM_SWITCHES;++i){
-    if(!digitalRead(switchPins[i])){
-      if(!isInQueue(i)){
+  for (int i = 0; i < NUM_SWITCHES; ++i) {
+    if (!digitalRead(switchPins[i])) {
+      if (!isInQueue(i)) {
         qpush(i);
       }
     }
   }
 }
 
-int openDoor(){
+int openDoor() {
   //Serial.println("open");
   //servo 1 open door
   servos[1]->write(OPEN_POS);
@@ -174,11 +175,11 @@ int openDoor(){
   //servo0 to standby position
   servos[0]->write(STANDBY_POS);
   delay(SERVO_DELAY);
-  isClosed=0;
+  isClosed = 0;
   return 1;
 }
 
-int closeDoor(){
+int closeDoor() {
   //Serial.println("close");
   //servo0 to off position
   servos[0]->write(OFF_POS);
@@ -187,93 +188,94 @@ int closeDoor(){
   //servo 1 close door
   servos[1]->write(CLOSED_POS);
 
-  
+
   delay(SERVO_DELAY);
-  isClosed=1;
+  isClosed = 1;
   return 1;
 }
 
-int extend(){
+int extend() {
   //Serial.println("extend");
   servos[0]->write(TOP_POS);
   delay(SERVO_DELAY);
 }
 
-int retract(){
+int retract() {
   //Serial.println("retract");
   servos[0]->write(STANDBY_POS);
   delay(SERVO_DELAY);
 }
 
-int activateMotors(){
+int activateMotors() {
   //Serial.println("activateMotors");
   isShutdown = 0;
   //attach servos
-  for(int i=0;i<NUM_SERVOS;++i){
+  for (int i = 0; i < NUM_SERVOS; ++i) {
     servos[i]->attach(servoPins[i]);
   }
   //close door for safety
   closeDoor();
 
   //enable stepper
-  digitalWrite(ENABLE_PIN,LOW);
+  digitalWrite(ENABLE_PIN, LOW);
 }
-int deactivateMotors(){
+int deactivateMotors() {
   //Serial.println("deactivateMotors");
-  isShutdown=1;
-  if(!isClosed)
+  isShutdown = 1;
+  if (!isClosed)
     closeDoor();
   //detach servos
-  for(int i=0;i<NUM_SERVOS;++i){
+  for (int i = 0; i < NUM_SERVOS; ++i) {
     servos[i]->detach();
   }
-  isHomed=0;
+  isHomed = 0;
   //disable stepper
-  digitalWrite(ENABLE_PIN,HIGH);
+  digitalWrite(ENABLE_PIN, HIGH);
 }
 
-void distancemeaure(){
-  digitalWrite(Trig,LOW);
+void distancemeaure() {
+  digitalWrite(Trig, LOW);
   delayMicroseconds(2);
-  digitalWrite(Trig,HIGH);
+  digitalWrite(Trig, HIGH);
   delayMicroseconds(10);
-  digitalWrite(Trig,LOW);
-  duration =pulseIn(Echo,HIGH);
-  distance = (duration/2.)/(29.1); //Distance in centimeters
-  
-  if(distance < 16){ //Set to 16 centimeters.  Roughly 1/2 ft
-lcd.print("Welcome to the game...");
-sleep=0;
-activateMotors();
-lcd.clear();
-    }}
+  digitalWrite(Trig, LOW);
+  duration = pulseIn(Echo, HIGH);
+  distance = (duration / 2.) / (29.1); //Distance in centimeters
 
-void sounds(){
-    //Use this loop to play tones based on the pin
-   for (int i=0;i<NUM_SWITCHES;++i){
-   int pinstate=digitalRead(switchPins[i]);
-    if (pinstate==HIGH && i==1){
-        tone(speaker,speaker1,1000);
-        noTone(speaker);
+  if (distance < 16) { //Set to 16 centimeters.  Roughly 1/2 ft
+    lcd.print("Welcome to the game...");
+    sleep = 0;
+    activateMotors();
+    lcd.clear();
+  }
+}
+
+void sounds() {
+  //Use this loop to play tones based on the pin
+  for (int i = 0; i < NUM_SWITCHES; ++i) {
+    int pinstate = digitalRead(switchPins[i]);
+    if (pinstate == HIGH && i == 1) {
+      tone(speaker, speaker1, 1000);
+      noTone(speaker);
     }
-    else if (pinstate==HIGH && i==2){
-        tone(speaker,speaker2,1000);
-        noTone(speaker);
+    else if (pinstate == HIGH && i == 2) {
+      tone(speaker, speaker2, 1000);
+      noTone(speaker);
     }
-    else if (pinstate==HIGH && i==3){
-        tone(speaker,speaker3,1000);
-        noTone(speaker);
+    else if (pinstate == HIGH && i == 3) {
+      tone(speaker, speaker3, 1000);
+      noTone(speaker);
     }
-    else if (pinstate==HIGH && i==4){
-        tone(speaker,speaker2,1000);
-        noTone(speaker);
+    else if (pinstate == HIGH && i == 4) {
+      tone(speaker, speaker2, 1000);
+      noTone(speaker);
     }
-        else if (pinstate == HIGH && i==5){
-      tone(speaker, speaker5,1000);
+    else if (pinstate == HIGH && i == 5) {
+      tone(speaker, speaker5, 1000);
       noTone(speaker);
     }
     //Each switch plays a different tone, specified by the different speaker#s
-}
+  }
 }
 /* void repeat(){
   for (int i=0;i<NUM_SWITCHES;++i){
@@ -294,25 +296,25 @@ void sounds(){
       pinnum=5;
     }
     //Names the different pins with different variables
-}
-if (newstate==oldstate){
+  }
+  if (newstate==oldstate){
   presscount=presscount+1;
   oldstate=pinnum;
-}
-else{
+  }
+  else{
   count=0;
-}
-if (count=3){
+  }
+  if (count=3){
   lcd.print("Press another switch");
   delay(2000);
   lcd.clear();
-}
-else if (count=4){
+  }
+  else if (count=4){
   lcd.print("I said choose differently")
   delay(2000);
   lcd.clear();
-}
-else if (count>=5){
+  }
+  else if (count>=5){
   lcd.print("Im Leaving");
   delay(2000);
   lcd.clear();
@@ -320,40 +322,41 @@ else if (count>=5){
   lcd.print("Bye >:(");
   delay(2000);
   lcd.clear();
-}
-}
+  }
+  }
 */
 
 void setup() {
   // put your setup code here, to run once:
   // setup switches as digital inputs
   pinMode(ENDSTOP_PIN, INPUT_PULLUP);
-  for(int i=0;i<NUM_SWITCHES;++i){
-    pinMode(switchPins[i],INPUT_PULLUP);}
+  for (int i = 0; i < NUM_SWITCHES; ++i) {
+    pinMode(switchPins[i], INPUT_PULLUP);
+  }
 
   //create servo objects and attach pwm pins
-  for(int i=0;i<NUM_SERVOS;++i){
+  for (int i = 0; i < NUM_SERVOS; ++i) {
     servos[i] = new Servo();
     servos[i]->attach(servoPins[i]);
   }
-  
+
   // Set target motor RPM to 1RPM and microstepping to 1 (full step mode)
   stepper.begin(RPM, MICRO_STEPPING);
-  pinMode(ENABLE_PIN,OUTPUT);
-  digitalWrite(ENABLE_PIN,LOW);
+  pinMode(ENABLE_PIN, OUTPUT);
+  digitalWrite(ENABLE_PIN, LOW);
 
   servos[0]->write(OFF_POS);
   servos[1]->write(CLOSED_POS);
   delay(SERVO_DELAY);
 
   //Serial.begin(9600);
-  
+
   //Initialize Ultrasonic Sensor
-  pinMode(Trig,OUTPUT);
-  pinMode(Echo,INPUT);
-  
+  pinMode(Trig, OUTPUT);
+  pinMode(Echo, INPUT);
+
   //Set up LCD Display
-    lcd.setCursor(0, 0);
+  lcd.setCursor(0, 0);
   // define the bounds for the LCD String
   lcd.begin(16, 2);
   lcd.print("Starting Up");
@@ -364,64 +367,66 @@ void setup() {
 
 
   //if all switches are active on bootup, activate disassembling mode.
-  for(int i=0;i<NUM_SWITCHES;++i){
-    if(digitalRead(switchPins[i])){
-      disassemblingMode=0;
+  for (int i = 0; i < NUM_SWITCHES; ++i) {
+    if (digitalRead(switchPins[i])) {
+      disassemblingMode = 0;
       break;
     }
   }
-  if(disassemblingMode){
+  if (disassemblingMode) {
     servos[1]->write(DISASSEMBLING_POS);
     delay(SERVO_DELAY);
     //detach servos
-    for(int i=0;i<NUM_SERVOS;++i){
+    for (int i = 0; i < NUM_SERVOS; ++i) {
       servos[i]->detach();
     }
-    isHomed=0;
+    isHomed = 0;
     //disable stepper
-    digitalWrite(ENABLE_PIN,HIGH);
-    while(1){
+    digitalWrite(ENABLE_PIN, HIGH);
+    while (1) {
       delay(10000);
     }
   }
 }
+//end of setup loop
 
-void loop(){
+void loop() {
   //Serial.println("idle Loop: " + String(idleLoopCounter) +" of " + String(TIME_TO_SHUTDOWN_IN_MS/DELAY_BETWEEN_LOOP_RUNS_IN_MS));
   // put your main code here, to run repeatedly:
   delay(DELAY_BETWEEN_LOOP_RUNS_IN_MS);
-while (sleep=1){
-  distancemeaure();
-}
+  while (sleep = 1) {
+    distancemeaure();
+  }
   //check if switches are pressed. if so, goto correct position and extend arm
   addSwitchesToQueue();
-  if(queuec){
+  if (queuec) {
     idleLoopCounter = 0; //reset idle loop counter
-    if(isShutdown){  //if motors are turned off, turn them back on
+    if (isShutdown) { //if motors are turned off, turn them back on
       activateMotors();
-    goTo(switchesPos[queue[0]]);
-    sounds();  //Play a tone based on which switch is pressed.  Is this the best spot for this?
+      goTo(switchesPos[queue[0]]);
+      sounds();  //Play a tone based on which switch is pressed.  Is this the best spot for this?
     }
-    if(isClosed){
+    if (isClosed) {
       openDoor();
-    extend();
-    retract();
-    qpop();
+      extend();
+      retract();
+      qpop();
     }
   }
   addSwitchesToQueue();
   //if queue is empty and door is open, close it
-  if(!queuec && !isClosed){
+  if (!queuec && !isClosed) {
     closeDoor();
   }
   //if door is closed, increment idle loop counter
-  if(isClosed && !(idleLoopCounter >= TIME_TO_SHUTDOWN_IN_MS/DELAY_BETWEEN_LOOP_RUNS_IN_MS)){
-    ++idleLoopCounter;}
+  if (isClosed && !(idleLoopCounter >= TIME_TO_SHUTDOWN_IN_MS / DELAY_BETWEEN_LOOP_RUNS_IN_MS)) {
+    ++idleLoopCounter;
+  }
 
-  if(!isShutdown && idleLoopCounter >= TIME_TO_SHUTDOWN_IN_MS/DELAY_BETWEEN_LOOP_RUNS_IN_MS){
+  if (!isShutdown && idleLoopCounter >= TIME_TO_SHUTDOWN_IN_MS / DELAY_BETWEEN_LOOP_RUNS_IN_MS) {
     deactivateMotors(); //turn motors off after idle for more than TIME_TO_SHUTDOWN_IN_MS ms
     lcd.print("Goodbye");
     lcd.clear();
-    sleep=1;
+    sleep = 1;
   }
 }// end of void loop
