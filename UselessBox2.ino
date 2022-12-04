@@ -34,8 +34,8 @@
 #define STEPS_PER_REV 200
 #define MICRO_STEPPING 16
 #define HOMEING_MOVEMENTS 1
-#define DIR_PIN 10
-#define STEP_PIN 11
+#define DIR_PIN 3
+#define STEP_PIN 2
 #define MS1_PIN 7
 #define MS2_PIN 6
 #define MS3_PIN 9
@@ -71,8 +71,8 @@ short servoPins[] = {SERVO2_PIN};
 
 short switchPins[] = {SW1_PIN, SW2_PIN, SW3_PIN, SW4_PIN, SW5_PIN};
 
-short switchesState[] = {0, 0, 0, 0, 0, 0};
-unsigned int switchesPos[] = { -1200, -960, -720, -480, -240, 0};
+short switchesState[] = {0, 0, 0, 0, 0};
+unsigned int switchesPos[] = {-960, -720, -480, -240, 0};
 
 short isHomed = 0;
 int currentPos = 0;
@@ -157,11 +157,12 @@ int qpop() {
 }
 
 int addSwitchesToQueue() {
-  //Serial.println("addToQueue");
+  Serial.println("addToQueue");
   for (int i = 0; i < NUM_SWITCHES; ++i) {
     if (!digitalRead(switchPins[i])) {
       if (!isInQueue(i)) {
         qpush(i);
+        Serial.println(i);
       }
     }
   }
@@ -241,11 +242,14 @@ void distancemeaure() {
   digitalWrite(Trig, LOW);
   duration = pulseIn(Echo, HIGH);
   distance = (duration / 2.) / (29.1); //Distance in centimeters
-
+//Serial.println(distance);
   if (distance < 16) { //Set to 16 centimeters.  Roughly 1/2 ft
-    lcd.print("Welcome to the game...");
     sleep = 0;
     activateMotors();
+    lcd.print("Welcome to");
+    lcd.setCursor(0,1);
+    lcd.print("the game...");
+    delay(2500);
     lcd.clear();
   }
 }
@@ -327,6 +331,7 @@ void sounds() {
 */
 
 void setup() {
+  Serial.begin(9600);
   // put your setup code here, to run once:
   // setup switches as digital inputs
   pinMode(ENDSTOP_PIN, INPUT_PULLUP);
@@ -361,6 +366,7 @@ void setup() {
   lcd.begin(16, 2);
   lcd.print("Starting Up");
   delay(4000);
+  lcd.clear();
   lcd.print("Ready");
   delay(2500);
   lcd.clear(); //Does this work??  Trying to reset the display to not display anything
