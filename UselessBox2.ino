@@ -16,7 +16,7 @@
 #include <Servo.h>
 
 //misc
-#define TIME_TO_SHUTDOWN_IN_MS 30000 //30s
+#define TIME_TO_SHUTDOWN_IN_MS 3000 //30s
 #define DELAY_BETWEEN_LOOP_RUNS_IN_MS 100
 
 
@@ -85,7 +85,7 @@ int Echo = 5; //Need to add Echo Pin
 float duration;
 float distance;
 int speaker = 6; //Need to add speaker pin
-int sleep=0;
+int sleep=1;
 int pinstate;
 int speaker1 = 200;
 int speaker2 = 300;
@@ -157,7 +157,7 @@ int qpop() {
 }
 
 int addSwitchesToQueue() {
-  Serial.println("addToQueue");
+ // Serial.println("addToQueue");
   for (int i = 0; i < NUM_SWITCHES; ++i) {
     if (digitalRead(switchPins[i])==1) {
       if (!isInQueue(i)) {
@@ -246,11 +246,13 @@ Serial.println(distance);
   if (distance < 16) { //Set to 16 centimeters.  Roughly 1/2 ft
     sleep = 0;
     activateMotors();
+    lcd.setCursor(0,0);
     lcd.print("Welcome to");
     lcd.setCursor(0,1);
     lcd.print("the game...");
     delay(2500);
     lcd.clear();
+    //sleep=1;
   }
   Serial.println("System on");
 }
@@ -408,14 +410,14 @@ void loop() {
   //Serial.println("loop");
   //Serial.println("idle Loop: " + String(idleLoopCounter) +" of " + String(TIME_TO_SHUTDOWN_IN_MS/DELAY_BETWEEN_LOOP_RUNS_IN_MS));
   // put your main code here, to run repeatedly:
+ // sleep=1;
   delay(DELAY_BETWEEN_LOOP_RUNS_IN_MS);
-  /*if (sleep = 1) {
+  while (sleep == 1) {//while
     distancemeaure();
     Serial.println(sleep);
-    sleep=0;
-  }*/
+    //sleep=0;
+  }
   //Serial.println("Out of sleep loop");
-  sleep=0;
   //check if switches are pressed. if so, goto correct position and extend arm
   addSwitchesToQueue();
   if (queuec) {
@@ -433,6 +435,7 @@ void loop() {
     }
   }
   addSwitchesToQueue();
+  //Serial.println("looping");
   //if queue is empty and door is open, close it
   if (!queuec && !isClosed) {
     closeDoor();
@@ -446,6 +449,6 @@ void loop() {
     deactivateMotors(); //turn motors off after idle for more than TIME_TO_SHUTDOWN_IN_MS ms
     lcd.print("Goodbye");
     lcd.clear();
-    //sleep=1;
+    sleep=1;
   }
 }// end of void loop
