@@ -85,7 +85,7 @@ int Echo = 5; //Need to add Echo Pin
 float duration;
 float distance;
 int speaker = 6; //Need to add speaker pin
-int sleep;
+int sleep=0;
 int pinstate;
 int speaker1 = 200;
 int speaker2 = 300;
@@ -159,7 +159,7 @@ int qpop() {
 int addSwitchesToQueue() {
   Serial.println("addToQueue");
   for (int i = 0; i < NUM_SWITCHES; ++i) {
-    if (!digitalRead(switchPins[i])) {
+    if (digitalRead(switchPins[i])==1) {
       if (!isInQueue(i)) {
         qpush(i);
         Serial.println(i);
@@ -242,7 +242,7 @@ void distancemeaure() {
   digitalWrite(Trig, LOW);
   duration = pulseIn(Echo, HIGH);
   distance = (duration / 2.) / (29.1); //Distance in centimeters
-//Serial.println(distance);
+Serial.println(distance);
   if (distance < 16) { //Set to 16 centimeters.  Roughly 1/2 ft
     sleep = 0;
     activateMotors();
@@ -252,6 +252,7 @@ void distancemeaure() {
     delay(2500);
     lcd.clear();
   }
+  Serial.println("System on");
 }
 
 void sounds() {
@@ -332,12 +333,14 @@ void sounds() {
 
 void setup() {
   Serial.begin(9600);
+  Serial.println("setup");
   // put your setup code here, to run once:
   // setup switches as digital inputs
-  pinMode(ENDSTOP_PIN, INPUT_PULLUP);
+  pinMode(ENDSTOP_PIN, INPUT);
   for (int i = 0; i < NUM_SWITCHES; ++i) {
-    pinMode(switchPins[i], INPUT_PULLUP);
+    pinMode(switchPins[i], INPUT);
   }
+  Serial.println("Switch Pinmodes");
 
   //create servo objects and attach pwm pins
   for (int i = 0; i < NUM_SERVOS; ++i) {
@@ -349,17 +352,18 @@ void setup() {
   stepper.begin(RPM, MICRO_STEPPING);
   pinMode(ENABLE_PIN, OUTPUT);
   digitalWrite(ENABLE_PIN, LOW);
-
+Serial.println("Target Motor");
   servos[0]->write(OFF_POS);
   servos[1]->write(CLOSED_POS);
   delay(SERVO_DELAY);
+  Serial.println("Servos");
 
   //Serial.begin(9600);
 
   //Initialize Ultrasonic Sensor
   pinMode(Trig, OUTPUT);
   pinMode(Echo, INPUT);
-
+Serial.println("Pinmodes");
   //Set up LCD Display
   lcd.setCursor(0, 0);
   // define the bounds for the LCD String
@@ -371,38 +375,47 @@ void setup() {
   delay(2500);
   lcd.clear(); //Does this work??  Trying to reset the display to not display anything
 
-
+Serial.println("LCD Bootup");
   //if all switches are active on bootup, activate disassembling mode.
   for (int i = 0; i < NUM_SWITCHES; ++i) {
-    if (digitalRead(switchPins[i])) {
+    if (digitalRead(switchPins[i])==1) {
       disassemblingMode = 0;
       break;
     }
   }
-  if (disassemblingMode) {
+  Serial.println("Activate Disassemble");
+ /* if (disassemblingMode) {
     servos[1]->write(DISASSEMBLING_POS);
     delay(SERVO_DELAY);
     //detach servos
     for (int i = 0; i < NUM_SERVOS; ++i) {
       servos[i]->detach();
     }
+    Serial.println("Dissemble");
     isHomed = 0;
     //disable stepper
     digitalWrite(ENABLE_PIN, HIGH);
     while (1) {
       delay(10000);
     }
-  }
+  }*/
+  Serial.println("Setup end");
 }
 //end of setup loop
 
 void loop() {
+ // Serial.println("sleep");
+  //Serial.println("loop");
   //Serial.println("idle Loop: " + String(idleLoopCounter) +" of " + String(TIME_TO_SHUTDOWN_IN_MS/DELAY_BETWEEN_LOOP_RUNS_IN_MS));
   // put your main code here, to run repeatedly:
   delay(DELAY_BETWEEN_LOOP_RUNS_IN_MS);
-  while (sleep = 1) {
+  /*if (sleep = 1) {
     distancemeaure();
-  }
+    Serial.println(sleep);
+    sleep=0;
+  }*/
+  //Serial.println("Out of sleep loop");
+  sleep=0;
   //check if switches are pressed. if so, goto correct position and extend arm
   addSwitchesToQueue();
   if (queuec) {
@@ -433,6 +446,6 @@ void loop() {
     deactivateMotors(); //turn motors off after idle for more than TIME_TO_SHUTDOWN_IN_MS ms
     lcd.print("Goodbye");
     lcd.clear();
-    sleep = 1;
+    //sleep=1;
   }
 }// end of void loop
