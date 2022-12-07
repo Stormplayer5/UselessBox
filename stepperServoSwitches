@@ -1,6 +1,8 @@
 // Include the AccelStepper Library
 #include <AccelStepper.h>
 #include <Servo.h>
+#include <TimerOne.h>
+#include <LiquidCrystal.h>
 
 
 // Define pin connections
@@ -13,6 +15,8 @@ int sw3 = A2; //A2
 int sw4 = A3; //A3
 int sw5 = A4; //A4
 int speaker = 6; //Need to add speaker pin
+bool hello_flag=0;
+bool goodbye_flag=0;
 
 // Define motor interface type
 #define motorInterfaceType 1
@@ -20,16 +24,28 @@ int isHomed = 0;
 int pos = 0; 
 
 // define switch parameters
-short location[] = { -50, -100, -200, -300, -400};
+short location[] = { -50, -100, -200, -300, -400};//Need to hone in the distances for the acutual switches.
 short switchpins[] = {sw1, sw2, sw3, sw4, sw5};
 short numswitch[] = { -1, -1, -1, -1, -1, -1};
 short sounds[] = {100, 200, 300, 400, 500};
 int NUM_SWITCH=6;
 
+// LCD Definitions
+int Trig = 4; //Need to add trig pin
+int Echo = 5; //Need to add Echo Pin
+float duration;
+float distance;
+int sleep = 1;
+int pinstate;
+int pinnum;
+int away;
+int awaynew;
+
+
 // Creates an instance
 AccelStepper myStepper(motorInterfaceType, stepPin, dirPin);
 Servo myservo;  // create servo object to control a servo
-
+LiquidCrystal lcd(7, 8, 9, 10, 11, 12);
 
 void setup() {
 
@@ -52,6 +68,26 @@ void setup() {
   Serial.begin(9600);
   
   goToHome(); 
+  pinMode(Trig, OUTPUT);
+  pinMode(Echo, INPUT);
+  pinMode(sw1, INPUT);
+  pinMode(sw2, INPUT);
+  pinMode(sw3, INPUT);
+  pinMode(sw4, INPUT);
+  pinMode(sw5, INPUT);
+  pinMode(ENDSTOP_PIN, INPUT);
+  pinMode(speaker, OUTPUT);
+  Serial.println("Pinmodes");
+  //Set up LCD Display
+  lcd.setCursor(0, 0);
+  // define the bounds for the LCD String
+  lcd.begin(16, 2);
+  lcd.print("Starting Up");
+  delay(4000);
+  lcd.clear();
+  lcd.print("Ready");
+  delay(2500);
+  lcd.clear();
 }
 
 int goToHome() {
@@ -73,23 +109,63 @@ int goToHome() {
   //return 0;
 }
 
+int distancemeasure() {
+  digitalWrite(Trig, LOW);
+  delayMicroseconds(2);
+  digitalWrite(Trig, HIGH);
+  delayMicroseconds(10);
+  digitalWrite(Trig, LOW);
+  duration = pulseIn(Echo, HIGH);
+  distance = (duration / 2.) / (29.1);//Distance in centimeters
+  return distance;
+}
+
 void loop() {
 
-// loop all 5 switches, read them, and move accordinginly
-for (int i = 0; i < 5; ++i) {
-        Serial.print("Pin");
-        Serial.println(i+1);
-        Serial.println(digitalRead(switchpins[i]));
-        
-      if (digitalRead(switchpins[i])==1) {
-        delay(10);
-        myStepper.runToNewPosition(location[i]);
-        hitSwitch();
-        tone(speaker, sounds[i], 1000);
+    distance=distancemeasure();
+    Serial.print("Distance ");
+    Serial.println(distance);
+    //away = 0;
 
+// loop all 5 switches, read them, and move accordinginly
+
+  if (distance <= 16) {
+  //awaynew = away + 1;
+  for (int i = 0; i < 5; ++i) {
+          Serial.print("Pin");
+          Serial.println(i+1);
+          Serial.println(digitalRead(switchpins[i]));
+          
+        if (digitalRead(switchpins[i])==1) {
+          delay(10);
+          myStepper.runToNewPosition(location[i]);
+          hitSwitch();
+          tone(speaker, sounds[i], 1000);
+  
+      }
     }
   }
-}
+  //if (awaynew == 1) {
+      //Hello();
+//  }
+ /* else {
+    //away = 0;
+    awaynew = away -1;
+    if (awaynew == -1) {
+      Goodbye();
+    }
+  }*/
+  if (hello_flag=0&&distance<=16){
+  Hello();
+  hello_flag=1;
+  goodbye_flag=0;
+  }
+  if (goodbye_flag=0&&distance>16){
+    Goodbye();
+    hello_flag=0;
+    goodbye_flag=1;
+  }
+}//End Void Loop
 
 void hitSwitch(){
   moveServo(100);
@@ -110,3 +186,19 @@ void checkEStop() {
     myStepper.stop();
   }
 }
+
+void Hello() {
+  lcd.clear();
+  lcd.setCursor(0, 0);
+  lcd.print("Hello");
+  delay(2500);
+  lcd.clear();
+}//End Hello Loop
+
+void Goodbye() {
+  lcd.clear();
+  lcd.setCursor(0, 0);
+  lcd.print("Goodbye");
+  delay(2500);
+  lcd.clear();
+}//End Goodbye Loop
