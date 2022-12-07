@@ -1,0 +1,112 @@
+// Include the AccelStepper Library
+#include <AccelStepper.h>
+#include <Servo.h>
+
+
+// Define pin connections
+const int dirPin = 3;
+const int stepPin = 2;
+int ENDSTOP_PIN = 19;
+int sw1 = A0; //A0
+int sw2 = A1; //A1
+int sw3 = A2; //A2
+int sw4 = A3; //A3
+int sw5 = A4; //A4
+int speaker = 6; //Need to add speaker pin
+
+// Define motor interface type
+#define motorInterfaceType 1
+int isHomed = 0;
+int pos = 0; 
+
+// define switch parameters
+short location[] = { -50, -100, -200, -300, -400};
+short switchpins[] = {sw1, sw2, sw3, sw4, sw5};
+short numswitch[] = { -1, -1, -1, -1, -1, -1};
+short sounds[] = {100, 200, 300, 400, 500};
+int NUM_SWITCH=6;
+
+// Creates an instance
+AccelStepper myStepper(motorInterfaceType, stepPin, dirPin);
+Servo myservo;  // create servo object to control a servo
+
+
+void setup() {
+
+  // set the switch PinModes
+  pinMode(sw1, INPUT);
+  pinMode(sw2, INPUT);
+  pinMode(sw3, INPUT);
+  pinMode(sw4, INPUT);
+  pinMode(sw5, INPUT);
+  pinMode(ENDSTOP_PIN, INPUT_PULLUP);
+  // set the maximum speed, acceleration factor,
+  // initial speed and the target position
+  
+  myservo.attach(13);  // attaches the servo on pin 6 to the servo object
+  moveServo(180); 
+  myStepper.setMaxSpeed(1000);
+  myStepper.setAcceleration(500);
+  myStepper.setSpeed(400);
+  myStepper.moveTo(2000);
+  Serial.begin(9600);
+  
+  goToHome(); 
+}
+
+int goToHome() {
+  Serial.println("homing");
+  isHomed = 0;
+  while (!isHomed) {
+    //Serial.println("Current Position");
+    //Serial.println(myStepper.currentPosition());
+    if (digitalRead(ENDSTOP_PIN)) {
+      isHomed = 1;
+      myStepper.setCurrentPosition(0);
+      //Serial.println("Current Position");
+      //Serial.println(myStepper.currentPosition());
+      //Serial.println("Homed!");
+      return 1; 
+    }
+    myStepper.run();
+  }
+  //return 0;
+}
+
+void loop() {
+
+// loop all 5 switches, read them, and move accordinginly
+for (int i = 0; i < 5; ++i) {
+        Serial.print("Pin");
+        Serial.println(i+1);
+        Serial.println(digitalRead(switchpins[i]));
+        
+      if (digitalRead(switchpins[i])==1) {
+        delay(10);
+        myStepper.runToNewPosition(location[i]);
+        hitSwitch();
+        tone(speaker, sounds[i], 1000);
+
+    }
+  }
+}
+
+void hitSwitch(){
+  moveServo(100);
+  moveServo(180); 
+  delay(10);
+}
+int moveServo(int desiredPos){
+    for (pos = 180; pos >= desiredPos; pos -= 1) { // goes from 0 degrees to 180 degrees
+    // in steps of 1 degree
+    myservo.write(pos);              // tell servo to go to position in variable 'pos'
+    delay(15);                       // waits 15ms for the servo to reach the position
+  }
+}
+
+void checkEStop() {
+  if (digitalRead(ENDSTOP_PIN)) {
+    myStepper.setCurrentPosition(0);
+    myStepper.stop();
+  }
+}
